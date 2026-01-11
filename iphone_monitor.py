@@ -16,40 +16,32 @@ except ImportError:
 
 
 def get_iphone_info() -> Optional[dict]:
-    """Get connected iPhone information."""
     devices = list_devices()
     if not devices:
         return None
 
     try:
-        # Connect to the first available device
         lockdown = create_using_usbmux()
 
-        # Get basic device info
         device_info = {
             "model": lockdown.display_name,
             "product_type": lockdown.product_type,
             "ios_version": lockdown.product_version,
         }
 
-        # Get battery and temperature info via diagnostics
         try:
             with DiagnosticsService(lockdown) as diag:
                 battery_info = diag.get_battery()
 
-                # Battery percentage
                 if "CurrentCapacity" in battery_info:
                     device_info["battery_percent"] = battery_info["CurrentCapacity"]
                 elif "BatteryCurrentCapacity" in battery_info:
                     device_info["battery_percent"] = battery_info["BatteryCurrentCapacity"]
 
-                # Temperature (in Celsius, value is in centi-degrees)
                 if "Temperature" in battery_info:
                     temp_raw = battery_info["Temperature"]
-                    # Convert from centi-Kelvin to Celsius
                     device_info["temperature_c"] = round((temp_raw / 100) - 273.15, 1)
 
-                # Charging status
                 device_info["is_charging"] = battery_info.get("IsCharging", False)
 
         except Exception as e:
@@ -62,7 +54,6 @@ def get_iphone_info() -> Optional[dict]:
 
 
 def show_popup(title: str, message: str):
-    """Show a macOS popup dialog."""
     script = f'''
     display dialog "{message}" with title "{title}" buttons {{"OK"}} default button "OK"
     '''
@@ -70,7 +61,6 @@ def show_popup(title: str, message: str):
 
 
 def format_device_info(info: dict) -> str:
-    """Format device info for display."""
     lines = []
 
     if "error" in info:
@@ -106,7 +96,6 @@ def format_device_info(info: dict) -> str:
 
 
 def monitor_iphone_connection():
-    """Monitor for iPhone connections."""
     print("iPhone Monitor started. Waiting for device connection...")
     print("Press Ctrl+C to stop.\n")
 
